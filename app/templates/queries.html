@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Consultas e informes | Terra{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">Análisis relacional</div><h1>Consultas e informes</h1><p>Vistas de solo lectura que reúnen información de varias tablas para responder preguntas del censo y la atención.</p></div></div>
+<div class="callout">Cada consulta se implementa como una vista de PostgreSQL que relaciona tres o más tablas. Los resultados se pueden filtrar escribiendo en el buscador de la tabla.</div>
+<div class="query-cards">{% for view_name,label,description in views %}<a class="query-card" href="{{ url_for('query_view',view_name=view_name) }}"><span class="query-number">VISTA {{ '%02d'|format(loop.index) }}</span><h3>{{ label }}</h3><p>{{ description }}</p><span class="query-open">Consultar resultados →</span></a>{% endfor %}</div>
+{% endblock %}

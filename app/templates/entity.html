@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}{{ label }} | Terra{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="{{ url_for('entities_page') }}">Gestión de datos</a><span>›</span><span>{{ group }}</span></div>
+<div class="page-heading"><div><div class="eyebrow">{{ group }}</div><h1>{{ label }}</h1><p>{{ description }}</p></div><div class="heading-actions"><a class="btn btn-quiet" href="{{ url_for('entities_page') }}">← Todas las entidades</a></div></div>
+<div class="entity-workspace">{% if can_manage_records or (current_user.rol=='persona' and table=='persona' and editing) %}
+  <section class="panel editor-panel"><div class="panel-head"><div><h2 class="panel-title">{{ 'Editar registro' if editing else 'Nuevo registro' }}</h2><div class="panel-subtitle">{{ 'Actualiza los campos editables y guarda los cambios.' if editing else 'Completa los campos y guarda el registro.' }}</div></div><span class="metric-icon">{{ 'ED' if editing else '＋' }}</span></div>
+    <form method="post" action="{{ url_for('entity_page',table=table,editar=edit_token) if editing else url_for('entity_page',table=table) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="action" value="save">
+      {% if editing %}<div class="callout">Las claves primarias se conservan para proteger las relaciones entre entidades. {{ fields[0].value }}</div>{% endif %}
+      <div class="form-grid">
+      {% for field in fields %}<div class="field {% if field.kind in ['textarea','readonly'] or field.kind=='select' and field.columns|length>1 %}span-2{% endif %}">
+        <label for="field-{{ loop.index }}">{{ field.label }}{% if field.required %}<span class="required-mark"> *</span>{% endif %}</label>
+        {% if field.kind=='readonly' %}<input id="field-{{ loop.index }}" type="text" value="{{ field.value }}" readonly>
+        {% elif field.kind=='select' %}<select id="field-{{ loop.index }}" name="{{ field.name }}" {% if field.required %}required{% endif %} {% if field.locked %}disabled{% endif %}>
+          <option value="">Selecciona una opción</option>{% for option in field.options %}<option value="{{ option.value }}" {% if field.value==option.value %}selected{% endif %}>{{ option.label }}</option>{% endfor %}
+        </select>{% if field.locked %}<small class="field-hint">Relación incluida en la clave primaria: se mantiene fija al editar.</small>{% endif %}
+        {% elif field.kind=='textarea' %}<textarea id="field-{{ loop.index }}" name="{{ field.name }}" {% if field.required %}required{% endif %} placeholder="Escribe {{ field.label|lower }}…">{{ field.value }}</textarea>
+        {% elif field.kind=='checkbox' %}<label class="check-row"><input id="field-{{ loop.index }}" type="checkbox" name="{{ field.name }}" value="true" {% if field.value in ['True','true','1'] %}checked{% endif %}>Sí</label>
+        {% else %}<input id="field-{{ loop.index }}" name="{{ field.name }}" type="{{ field.kind }}" value="{{ field.value }}" {% if field.required %}required{% endif %} {% if field.kind=='number' %}step="any"{% endif %} {% if field.hint and 'Máximo' in field.hint %}maxlength="{{ field.hint|replace('Máximo ','')|replace(' caracteres.','') }}"{% endif %} placeholder="{% if field.kind=='number' %}Ingresa un valor numérico{% else %}Ingresa {{ field.label|lower }}{% endif %}">
+        {% endif %}
+        {% if field.hint and field.kind not in ['readonly','select'] %}<small class="field-hint">{{ field.hint }}</small>{% endif %}
+        {% if field.kind=='select' and not field.options and field.required %}<small class="field-hint warning-hint">No hay registros relacionados. Crea primero la entidad correspondiente.</small>{% endif %}
+      </div>{% endfor %}
+      </div>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">{{ 'Guardar cambios' if editing else 'Crear registro' }}</button>{% if editing %}<a class="btn btn-quiet" href="{{ url_for('entity_page',table=table) }}">Cancelar</a>{% endif %}</div>
+    </form>
+  </section>
+{% else %}<div class="callout">Tu perfil permite consultar la información. Para editar tus datos, abre la entidad Personas y selecciona tu propio registro.</div>{% endif %}
+  <section class="panel records-panel"><div class="panel-head"><div><h2 class="panel-title">Registros existentes</h2><div class="panel-subtitle">Se muestran hasta 100 filas para mantener ágil la consulta.</div></div><span class="record-count">{{ rows|length }} visibles</span></div>
+    <div class="toolbar"><input class="search-input" type="search" placeholder="Buscar en los registros…" data-table-search="records-table" aria-label="Buscar registros"><span class="toolbar-note">{{ columns|length }} campos · {{ primary_keys|length }} clave(s) primaria(s)</span></div>
+    {% if rows %}<div class="table-wrap"><table id="records-table"><thead><tr>{% for col in columns %}<th>{{ label_for(col) }}</th>{% endfor %}{% if can_manage_records or (current_user.rol=='persona' and table=='persona') %}<th>Acciones</th>{% endif %}</tr></thead><tbody>{% for row in rows %}<tr>{% for col in columns %}<td>{{ row._display[col] }}</td>{% endfor %}{% if can_manage_records %}<td class="row-actions"><a class="btn btn-small btn-quiet" href="{{ url_for('entity_page',table=table,editar=row._key) }}">Editar</a>{% if can_delete_records %}<form method="post" action="{{ url_for('entity_page',table=table) }}" data-confirm="¿Eliminar este registro? PostgreSQL impedirá borrar datos que tengan relaciones dependientes."><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="action" value="delete"><input type="hidden" name="key" value="{{ row._key }}"><button class="btn btn-small btn-danger" type="submit">Eliminar</button></form>{% endif %}</td>{% elif table=='persona' and row.id_persona==current_persona_id %}<td class="row-actions"><a class="btn btn-small btn-quiet" href="{{ url_for('entity_page',table=table,editar=row._key) }}">Editar mis datos</a></td>{% endif %}</tr>{% endfor %}</tbody></table></div>{% if truncated %}<p class="table-footnote">La lista está limitada a 100 filas. Usa el campo de búsqueda para filtrar estos resultados.</p>{% endif %}{% else %}<div class="empty-state"><div class="empty-icon">{{ rows|length }}</div>No hay registros en esta entidad todavía.</div>{% endif %}
+  </section>
+</div>
+{% endblock %}

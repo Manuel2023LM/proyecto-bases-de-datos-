@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11182b">
+  <title>Iniciar sesión | Terra</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="login-page">
+  <button class="theme-toggle login-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema">
+    <span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Claro</span>
+  </button>
+  <main class="login-layout">
+    <section class="login-story">
+      <a class="brand login-brand" href="{{ url_for('login') }}">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span><strong>Terra</strong><small>Gestión territorial</small></span>
+      </a>
+      <div class="login-story-content">
+        <span class="eyebrow">Censo y respuesta municipal</span>
+        <h1>Información clara para una respuesta coordinada.</h1>
+        <p>Organiza los efectos de los terremotos en personas, hogares, viviendas e infraestructura.</p>
+        <div class="login-story-stats">
+          <span><strong>36</strong><small>entidades de gestión</small></span>
+          <span><strong>6</strong><small>consultas relacionales</small></span>
+        </div>
+      </div>
+      <div class="login-story-foot">Plataforma académica · Datos ficticios de demostración</div>
+    </section>
+    <section class="login-form-side">
+      <div class="login-card">
+        <div class="login-card-mark">TERRA · GESTIÓN MUNICIPAL</div>
+        <h2>Iniciar sesión</h2>
+        <p class="login-subtitle">Accede a la información y herramientas del proyecto.</p>
+        {% with messages=get_flashed_messages(with_categories=true) %}
+          {% if messages %}<div class="flash-stack">{% for category,message in messages %}<div class="flash {{ category }}"><span>{{ message }}</span></div>{% endfor %}</div>{% endif %}
+        {% endwith %}
+        <form method="post" action="{{ url_for('login',next=request.args.get('next','')) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="field">
+            <label for="nombre_usuario">Nombre de usuario</label>
+            <input id="nombre_usuario" name="nombre_usuario" type="text" autocomplete="username" required autofocus placeholder="Tu usuario">
+          </div>
+          <div class="field">
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" autocomplete="current-password" required placeholder="Tu contraseña">
+          </div>
+          <button class="btn btn-primary login-submit" type="submit">Entrar <span aria-hidden="true">→</span></button>
+        </form>
+        <div class="auth-switch">
+          <span>¿Aún no tienes cuenta?</span>
+          <a href="{{ url_for('register') }}">Crear cuenta de persona</a>
+        </div>
+        {% if admin_bootstrap_enabled %}
+        <div class="auth-switch">
+          <span>¿Necesitas crear un administrador independiente?</span>
+          <a href="{{ url_for('admin_bootstrap') }}">Usar clave especial de un solo uso</a>
+        </div>
+        {% endif %}
+        <p class="login-help">Las cuentas nuevas se crean con perfil persona. Un administrador asigna los roles de encargado o administrador.</p>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11182b">
+  <title>Crear administrador | Terra</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="login-page">
+  <button class="theme-toggle login-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema">
+    <span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Claro</span>
+  </button>
+  <main class="login-layout">
+    <section class="login-story">
+      <a class="brand login-brand" href="{{ url_for('login') }}">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span><strong>Terra</strong><small>Gestión territorial</small></span>
+      </a>
+      <div class="login-story-content">
+        <span class="eyebrow">Acceso de administración</span>
+        <h1>Crea una cuenta administradora independiente.</h1>
+        <p>La clave especial solo autoriza esta creación. Después iniciarás sesión con tu propio usuario y contraseña.</p>
+      </div>
+      <div class="login-story-foot">Código de alta de un solo uso · No es una contraseña para iniciar sesión</div>
+    </section>
+    <section class="login-form-side">
+      <div class="login-card">
+        <div class="login-card-mark">TERRA · SEGURIDAD</div>
+        <h2>Crear administrador</h2>
+        <p class="login-subtitle">Este código especial se puede utilizar una sola vez.</p>
+        {% with messages=get_flashed_messages(with_categories=true) %}
+          {% if messages %}<div class="flash-stack">{% for category,message in messages %}<div class="flash {{ category }}"><span>{{ message }}</span></div>{% endfor %}</div>{% endif %}
+        {% endwith %}
+        <form method="post" action="{{ url_for('admin_bootstrap') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="field">
+            <label for="clave_alta">Clave especial de alta</label>
+            <input id="clave_alta" name="clave_alta" type="password" autocomplete="off" required>
+          </div>
+          <div class="field">
+            <label for="nombre_usuario">Usuario nuevo</label>
+            <input id="nombre_usuario" name="nombre_usuario" type="text" value="{{ form.nombre_usuario }}" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="contrasena">Contraseña de esta cuenta</label>
+            <input id="contrasena" name="contrasena" type="password" minlength="10" autocomplete="new-password" required>
+          </div>
+          <div class="field">
+            <label for="confirmacion">Confirma la contraseña</label>
+            <input id="confirmacion" name="confirmacion" type="password" minlength="10" autocomplete="new-password" required>
+          </div>
+          <button class="btn btn-primary login-submit" type="submit">Crear cuenta <span aria-hidden="true">→</span></button>
+        </form>
+        <div class="auth-switch"><a href="{{ url_for('login') }}">Volver al inicio de sesión</a></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

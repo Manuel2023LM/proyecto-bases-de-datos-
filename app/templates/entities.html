@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Gestión de datos | Terra{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">Registro y mantenimiento</div><h1>Gestión de datos</h1><p>Selecciona una entidad para consultar sus registros y administrar altas, cambios o eliminaciones. El modelo integrado contiene {{ total }} entidades relacionadas.</p></div></div>
+<div class="callout">Empieza por los catálogos y entidades base —departamentos, municipios, terremotos, personas y hogares—. Las listas de relación se llenan con los registros existentes.</div>
+{% for group in groups %}<section class="entity-group"><div class="group-heading"><h2>{{ group.name }}</h2><span>{{ group['items']|length }} entidades</span></div><div class="entity-grid">{% for item in group['items'] %}<a class="entity-card" href="{{ url_for('entity_page',table=item.table) }}"><span class="entity-card-icon">{{ '%02d'|format(loop.index) }}</span><span class="entity-card-body"><strong>{{ item.label }}</strong><small>{{ item.description }}</small></span><span class="entity-arrow">→</span></a>{% endfor %}</div></section>{% endfor %}
+{% endblock %}

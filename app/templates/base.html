@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101d33">
+  <meta name="description" content="Plataforma de censo habitacional y poblacional para la gestión de afectaciones por terremotos.">
+  <title>{% block title %}Terra | Censo y atención{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('dashboard') }}">
+      <span class="brand-mark"><span></span><span></span><span></span></span>
+      <span><strong>Terra</strong><small>Gestión territorial</small></span>
+    </a>
+    <div class="side-label">PLATAFORMA MUNICIPAL</div>
+    <nav class="primary-nav" aria-label="Navegación principal">
+      <a class="nav-link {% if active=='inicio' %}active{% endif %}" href="{{ url_for('dashboard') }}"><span class="nav-icon">IN</span>Resumen</a>
+      <a class="nav-link {% if active=='datos' %}active{% endif %}" href="{{ url_for('entities_page') }}"><span class="nav-icon">GD</span>Gestión de datos</a>
+      <a class="nav-link {% if active=='consultas' %}active{% endif %}" href="{{ url_for('queries_page') }}"><span class="nav-icon">CO</span>Consultas e informes</a>
+      {% if can_manage %}<a class="nav-link {% if active=='usuarios' %}active{% endif %}" href="{{ url_for('users_page') }}"><span class="nav-icon">US</span>Usuarios y roles</a>{% endif %}
+      <a class="nav-link {% if active=='documentacion' %}active{% endif %}" href="{{ url_for('documentation_page') }}"><span class="nav-icon">DO</span>Guía del proyecto</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="status-dot"></div><div><strong>{% if is_production %}Conexión en nube{% else %}Conexión local{% endif %}</strong><small>PostgreSQL · entorno académico</small></div>
+    </div>
+  </aside>
+  <main class="main-area">
+    <header class="topbar">
+      <div class="mobile-brand"><span class="brand-mark"><span></span><span></span><span></span></span><strong>Terra</strong></div>
+      <div class="topbar-context"><span class="context-dot"></span>Gestión de información por afectación sísmica</div>
+      <div class="topbar-right"><button class="theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema"><span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Claro</span></button><span class="local-badge">{% if is_production %}EN LÍNEA{% else %}ENTORNO LOCAL{% endif %}</span>{% if current_user %}<span class="account-badge"><strong>{{ current_user.nombre_usuario }}</strong><small>{{ current_user.rol|capitalize }}</small></span><form method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="btn btn-quiet btn-small" type="submit">Cerrar sesión</button></form>{% endif %}</div>
+    </header>
+    <div class="page-wrap">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}<div class="flash-stack" role="status">{% for category,message in messages %}<div class="flash {{ category }}"><span class="flash-symbol">{% if category=='success' %}✓{% else %}!{% endif %}</span><span>{{ message }}</span><button type="button" class="flash-close" onclick="this.parentElement.remove()" aria-label="Cerrar mensaje">&times;</button></div>{% endfor %}</div>{% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+      <footer class="footer"><span>Terra · Censo habitacional y poblacional</span><span>Proyecto académico · {{ current_year }}</span></footer>
+    </div>
+  </main>
+</div>
+<script>
+document.addEventListener('input',function(event){const input=event.target.closest('[data-table-search]');if(!input)return;const table=document.getElementById(input.dataset.tableSearch);if(!table)return;const query=input.value.trim().toLocaleLowerCase('es');for(const row of table.tBodies[0]?.rows||[]){row.hidden=!row.textContent.toLocaleLowerCase('es').includes(query);}});
+document.addEventListener('submit',function(event){const form=event.target.closest('[data-confirm]');if(form&&!window.confirm(form.dataset.confirm))event.preventDefault();});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

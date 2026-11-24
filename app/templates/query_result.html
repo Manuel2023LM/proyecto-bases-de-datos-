@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}{{ label }} | Terra{% endblock %}
+{% block content %}
+<div class="breadcrumb"><a href="{{ url_for('queries_page') }}">Consultas e informes</a><span>›</span><span>{{ label }}</span></div>
+<div class="page-heading"><div><div class="eyebrow">Vista relacional · PostgreSQL</div><h1>{{ label }}</h1><p>{{ description }}</p></div><div class="heading-actions"><a class="btn btn-quiet" href="{{ url_for('queries_page') }}">← Volver a consultas</a></div></div>
+<section class="panel"><div class="toolbar"><input class="search-input" type="search" placeholder="Buscar en los resultados…" data-table-search="query-table" aria-label="Buscar resultados"><span class="toolbar-note">{{ rows|length }} resultado(s) visibles</span></div>
+  {% if rows %}<div class="table-wrap"><table id="query-table"><thead><tr>{% for col in columns %}<th>{{ label_for(col) }}</th>{% endfor %}</tr></thead><tbody>{% for row in rows %}<tr>{% for col in columns %}<td>{{ row[col] }}</td>{% endfor %}</tr>{% endfor %}</tbody></table></div>{% if truncated %}<p class="table-footnote">Se muestran los primeros 500 resultados.</p>{% endif %}{% else %}<div class="empty-state"><div class="empty-icon">0</div>La vista no tiene resultados todavía. Registra información relacionada y vuelve a consultar.</div>{% endif %}
+</section>
+{% endblock %}

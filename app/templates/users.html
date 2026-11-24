@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Usuarios y roles | Terra{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">Control de acceso</div><h1>Usuarios y roles</h1><p>Administra quién puede acceder y qué operaciones permite su perfil.</p></div></div>
+<div class="role-cards">
+  <article class="role-card role-admin"><span class="role-card-icon">AD</span><div><h3>Administrador</h3><p>Acceso completo a datos, usuarios y roles.</p></div></article>
+  <article class="role-card role-manager"><span class="role-card-icon">EN</span><div><h3>Encargado</h3><p>Consulta, inserta y edita registros; no elimina ni administra cuentas.</p></div></article>
+  <article class="role-card role-person"><span class="role-card-icon">PE</span><div><h3>Persona</h3><p>Consulta la información y puede editar únicamente sus propios datos personales.</p></div></article>
+</div>
+<div class="callout">Las cuentas se almacenan con contraseñas protegidas mediante hash. El perfil persona debe vincularse con una persona del censo. Las cuentas de administrador y encargado deben usar contraseñas distintas y privadas.</div>
+<div class="user-layout">
+  <section class="panel user-create-panel"><div class="panel-head"><div><h2 class="panel-title">Crear cuenta</h2><div class="panel-subtitle">La contraseña debe tener al menos 10 caracteres.</div></div><span class="metric-icon">＋</span></div>
+    <form method="post" action="{{ url_for('users_page') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="action" value="crear">
+      <div class="field"><label for="new-username">Nombre de usuario</label><input id="new-username" name="nombre_usuario" required minlength="3" maxlength="50" placeholder="ejemplo.usuario"></div>
+      <div class="field"><label for="new-role">Perfil</label><select id="new-role" name="rol" required><option value="">Selecciona un perfil</option>{% for role in roles %}<option value="{{ role }}">{{ role|capitalize }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="new-person">Persona relacionada</label><select id="new-person" name="persona_id_persona"><option value="">Sin persona relacionada</option>{% for person in people %}<option value="{{ person.id_persona }}">{{ person.apellidos or '' }}, {{ person.nombres }} · ID {{ person.id_persona }}{% if person.numero_documento %} · Doc. {{ person.numero_documento }}{% endif %}</option>{% endfor %}</select><small class="field-hint">Obligatorio para el perfil persona.</small></div>
+      <div class="field"><label for="new-password">Contraseña inicial</label><input id="new-password" name="contrasena" type="password" autocomplete="new-password" required minlength="10" placeholder="Mínimo 10 caracteres"></div>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Crear usuario</button></div>
+    </form>
+  </section>
+  <section class="panel user-list-panel"><div class="panel-head"><div><h2 class="panel-title">Cuentas registradas</h2><div class="panel-subtitle">{{ users|length }} cuenta(s) en el sistema.</div></div></div>
+    {% if users %}<div class="user-account-list">{% for user in users %}<article class="user-account-card">
+      <div class="user-account-top"><span class="avatar-badge">{{ user.nombre_usuario[:1]|upper }}</span><div class="user-account-name"><strong>{{ user.nombre_usuario }}</strong><small>{% if user.persona_id_persona %}{{ user.nombres or '' }} {{ user.apellidos or '' }} · Persona #{{ user.persona_id_persona }}{% else %}Sin vínculo con persona{% endif %}</small></div><span class="pill role-pill {{ user.rol }}">{{ user.rol|capitalize }}</span><span class="account-state {{ 'state-active' if user.activo else 'state-inactive' }}">{{ 'Activa' if user.activo else 'Inactiva' }}</span></div>
+      <details class="user-edit-details"><summary>Editar permisos o contraseña</summary><form method="post" action="{{ url_for('users_page') }}" class="user-edit-form"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="action" value="actualizar"><input type="hidden" name="id_usuario" value="{{ user.id_usuario }}">
+        <div class="field"><label>Perfil</label><select name="rol" required>{% for role in roles %}<option value="{{ role }}" {% if user.rol==role %}selected{% endif %}>{{ role|capitalize }}</option>{% endfor %}</select></div>
+        <div class="field"><label>Persona relacionada</label><select name="persona_id_persona"><option value="">Sin vínculo</option>{% if user.persona_id_persona %}<option value="{{ user.persona_id_persona }}" selected>{{ user.nombres or '' }} {{ user.apellidos or '' }} · ID {{ user.persona_id_persona }}</option>{% endif %}{% for person in people %}<option value="{{ person.id_persona }}">{{ person.apellidos or '' }}, {{ person.nombres }} · ID {{ person.id_persona }}</option>{% endfor %}</select></div>
+        <div class="field"><label>Nueva contraseña</label><input name="contrasena" type="password" autocomplete="new-password" minlength="10" placeholder="Déjala vacía para conservarla"></div>
+        <label class="check-row"><input type="checkbox" name="activo" {% if user.activo %}checked{% endif %}> Cuenta activa</label><button class="btn btn-primary btn-small" type="submit">Guardar cambios</button>
+      </form></details>
+      {% if user.id_usuario != current_user.id_usuario %}<form method="post" action="{{ url_for('users_page') }}" class="account-delete-form" data-confirm="¿Eliminar la cuenta {{ user.nombre_usuario }}?"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><input type="hidden" name="action" value="eliminar"><input type="hidden" name="id_usuario" value="{{ user.id_usuario }}"><button class="btn btn-small btn-danger" type="submit">Eliminar cuenta</button></form>{% endif %}
+    </article>{% endfor %}</div>{% else %}<div class="empty-state">No hay cuentas registradas.</div>{% endif %}
+  </section>
+</div>
+{% endblock %}

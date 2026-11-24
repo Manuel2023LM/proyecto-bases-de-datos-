@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}No se pudo abrir la página | Terra{% endblock %}
+{% block content %}
+<section class="panel error-panel"><div class="error-code">{{ code }}</div><h1>No se pudo completar la solicitud</h1><p>{{ message }}</p><a class="btn btn-primary" href="{{ url_for('dashboard') }}">Volver al resumen</a></section>
+{% endblock %}

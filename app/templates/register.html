@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11182b">
+  <title>Crear cuenta | Terra</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+  <script src="{{ url_for('static', filename='theme.js') }}" defer></script>
+</head>
+<body class="login-page">
+  <button class="theme-toggle login-theme-toggle" type="button" data-theme-toggle aria-label="Cambiar tema">
+    <span class="theme-icon" aria-hidden="true">☀</span><span class="theme-label">Claro</span>
+  </button>
+  <main class="login-layout">
+    <section class="login-story">
+      <a class="brand login-brand" href="{{ url_for('login') }}">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span><strong>Terra</strong><small>Gestión territorial</small></span>
+      </a>
+      <div class="login-story-content">
+        <span class="eyebrow">Acceso personal</span>
+        <h1>Tu información, conectada con la respuesta local.</h1>
+        <p>Al crear una cuenta se registra tu perfil de persona. Los permisos de administración solo los asigna un administrador.</p>
+        <div class="login-story-stats">
+          <span><strong>36</strong><small>entidades de gestión</small></span>
+          <span><strong>6</strong><small>consultas relacionales</small></span>
+        </div>
+      </div>
+      <div class="login-story-foot">Plataforma académica · Datos ficticios de demostración</div>
+    </section>
+    <section class="login-form-side">
+      <div class="login-card register-card">
+        <div class="login-card-mark">TERRA · NUEVO PERFIL</div>
+        <h2>Crear cuenta</h2>
+        <p class="login-subtitle">Completa tus datos para registrar una cuenta de persona.</p>
+        {% with messages=get_flashed_messages(with_categories=true) %}
+          {% if messages %}<div class="flash-stack">{% for category,message in messages %}<div class="flash {{ category }}"><span>{{ message }}</span></div>{% endfor %}</div>{% endif %}
+        {% endwith %}
+        <form method="post" action="{{ url_for('register') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <div class="field">
+            <label for="nombres">Nombres</label>
+            <input id="nombres" name="nombres" type="text" maxlength="80" autocomplete="given-name" required value="{{ form.nombres }}" placeholder="Tus nombres">
+          </div>
+          <div class="field">
+            <label for="apellidos">Apellidos</label>
+            <input id="apellidos" name="apellidos" type="text" maxlength="80" autocomplete="family-name" value="{{ form.apellidos }}" placeholder="Tus apellidos">
+          </div>
+          <div class="field">
+            <label for="nombre_usuario">Nombre de usuario</label>
+            <input id="nombre_usuario" name="nombre_usuario" type="text" minlength="3" maxlength="50" autocomplete="username" required value="{{ form.nombre_usuario }}" placeholder="ejemplo.usuario">
+            <small class="field-hint">3–50 letras, números, puntos, guiones o guion bajo.</small>
+          </div>
+          <div class="field">
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" minlength="10" autocomplete="new-password" required placeholder="Mínimo 10 caracteres">
+          </div>
+          <div class="field">
+            <label for="confirmacion">Confirma la contraseña</label>
+            <input id="confirmacion" name="confirmacion" type="password" minlength="10" autocomplete="new-password" required placeholder="Escríbela de nuevo">
+          </div>
+          <button class="btn btn-primary login-submit" type="submit">Crear cuenta <span aria-hidden="true">→</span></button>
+        </form>
+        <div class="auth-switch">
+          <span>¿Ya tienes una cuenta?</span>
+          <a href="{{ url_for('login') }}">Volver a iniciar sesión</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
