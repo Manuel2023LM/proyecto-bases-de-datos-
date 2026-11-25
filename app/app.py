@@ -59,6 +59,8 @@ app.config.update(
 def connect_db():
     database_url = os.getenv("DATABASE_URL", "").strip()
     options = f"-c search_path={SCHEMA},public"
+    if is_production and not database_url:
+        raise psycopg.OperationalError("DATABASE_URL no está configurada en el entorno de producción.")
     if database_url:
         if is_production:
             return psycopg.connect(
@@ -550,7 +552,7 @@ def load_user_and_protect_forms():
         expected = session.get("csrf_token", "")
         if not supplied or not secrets.compare_digest(supplied, expected):
             abort(400, "La sesión del formulario expiró. Recarga la página e inténtalo de nuevo.")
-    if request.endpoint in {"login", "register", "admin_bootstrap", "health", "static"}:
+    if request.endpoint in {"login", "register", "admin_bootstrap", "health", "health_database", "static"}:
         g.current_user = None
         return
     user_id = session.get("user_id")
@@ -645,6 +647,19 @@ def register():
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/health/database")
+def health_database():
+    try:
+        with connect_db() as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT 1")
+                cur.fetchone()
+    except psycopg.Error as error:
+        app.logger.error("PostgreSQL health check failed [%s]: %s", type(error).__name__, error)
+        return {"status": "database_unavailable", "error": type(error).__name__}, 503
+    return {"status": "ok", "database": "connected"}
 
 
 @app.route("/admin/bootstrap", methods=["GET", "POST"])
@@ -992,7 +1007,8 @@ def missing_table_error(error):
 
 @app.errorhandler(psycopg.OperationalError)
 def database_error(error):
-    return render_template("error.html", code="Conexión con PostgreSQL", message="No se pudo conectar con la cuenta técnica de Terra. Ejecuta .\\init-db.ps1 y revisa que el servicio PostgreSQL esté activo."), 503
+    app.logger.error("PostgreSQL connection failed [%s]: %s", type(error).__name__, error)
+    return render_template("error.html", code="Conexión con PostgreSQL", message="Terra no pudo conectar con la base en la nube. Revisa DATABASE_URL y la disponibilidad de Neon."), 503
 
 
 @app.errorhandler(psycopg.Error)
