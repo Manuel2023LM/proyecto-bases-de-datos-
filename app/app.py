@@ -58,29 +58,42 @@ app.config.update(
 
 def connect_db():
     database_url = os.getenv("DATABASE_URL", "").strip()
-    options = f"-c search_path={SCHEMA},public"
     if is_production and not database_url:
-        raise psycopg.OperationalError("DATABASE_URL no está configurada en el entorno de producción.")
+        raise psycopg.OperationalError("DATABASE_URL no est? configurada en el entorno de producci?n.")
+
     if database_url:
         if is_production:
-            return psycopg.connect(
+            conn = psycopg.connect(
                 database_url,
-                options=options,
                 row_factory=dict_row,
                 connect_timeout=10,
                 sslmode="require",
             )
-        return psycopg.connect(database_url, options=options, row_factory=dict_row, connect_timeout=10)
-    return psycopg.connect(
-        host=os.getenv("PGHOST", "localhost"),
-        port=os.getenv("PGPORT", "5432"),
-        dbname=os.getenv("PGDATABASE", "censo_terremoto"),
-        user=os.getenv("PGAPPUSER") or os.getenv("PGUSER", "postgres"),
-        password=os.getenv("PGAPPPASSWORD") or os.getenv("PGPASSWORD", ""),
-        options=options,
-        row_factory=dict_row,
-        connect_timeout=5,
-    )
+        else:
+            conn = psycopg.connect(
+                database_url,
+                row_factory=dict_row,
+                connect_timeout=10,
+            )
+    else:
+        conn = psycopg.connect(
+            host=os.getenv("PGHOST", "localhost"),
+            port=os.getenv("PGPORT", "5432"),
+            dbname=os.getenv("PGDATABASE", "censo_terremoto"),
+            user=os.getenv("PGAPPUSER") or os.getenv("PGUSER", "postgres"),
+            password=os.getenv("PGAPPPASSWORD") or os.getenv("PGPASSWORD", ""),
+            row_factory=dict_row,
+            connect_timeout=5,
+        )
+
+    try:
+        # Neon pooled endpoints reject search_path in startup options. SET LOCAL is scoped
+        # to this transaction and is supported by PgBouncer transaction pooling.
+        conn.execute("SET LOCAL search_path TO censo_terremoto, public")
+    except Exception:
+        conn.close()
+        raise
+    return conn
 
 
 ENTITY_GROUPS = {
